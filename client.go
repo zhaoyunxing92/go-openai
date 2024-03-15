@@ -14,7 +14,7 @@ import (
 
 // Client is OpenAI GPT-3 API client.
 type Client struct {
-	config ClientConfig
+	config *ClientConfig
 
 	requestBuilder    utils.RequestBuilder
 	createFormBuilder func(io.Writer) utils.FormBuilder
@@ -45,7 +45,7 @@ func NewClient(authToken string) *Client {
 }
 
 // NewClientWithConfig creates new OpenAI API client for specified config.
-func NewClientWithConfig(config ClientConfig) *Client {
+func NewClientWithConfig(config *ClientConfig) *Client {
 	return &Client{
 		config:         config,
 		requestBuilder: utils.NewRequestBuilder(),

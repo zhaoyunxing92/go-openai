@@ -36,9 +36,50 @@ type ClientConfig struct {
 
 	EmptyMessagesLimit uint
 }
+type OptionFunc func(*ClientConfig)
 
-func DefaultConfig(authToken string) ClientConfig {
-	return ClientConfig{
+func WithBaseURL(baseURL string) OptionFunc {
+	return func(c *ClientConfig) {
+		c.BaseURL = baseURL
+	}
+}
+
+func WithAuthToken(authToken string) OptionFunc {
+	return func(c *ClientConfig) {
+		c.authToken = authToken
+	}
+}
+
+func WithOrgID(orgID string) OptionFunc {
+	return func(c *ClientConfig) {
+		c.OrgID = orgID
+	}
+}
+
+func WithAPIVersion(apiVersion string) OptionFunc {
+	return func(c *ClientConfig) {
+		c.APIVersion = apiVersion
+	}
+}
+
+func NewConfig(opts ...OptionFunc) *ClientConfig {
+	config := &ClientConfig{
+		BaseURL: openaiAPIURLv1,
+		APIType: APITypeOpenAI,
+		OrgID:   "",
+
+		HTTPClient: &http.Client{},
+
+		EmptyMessagesLimit: defaultEmptyMessagesLimit,
+	}
+	for _, opt := range opts {
+		opt(config)
+	}
+	return config
+}
+
+func DefaultConfig(authToken string) *ClientConfig {
+	return &ClientConfig{
 		authToken: authToken,
 		BaseURL:   openaiAPIURLv1,
 		APIType:   APITypeOpenAI,
@@ -50,8 +91,8 @@ func DefaultConfig(authToken string) ClientConfig {
 	}
 }
 
-func DefaultAzureConfig(apiKey, baseURL string) ClientConfig {
-	return ClientConfig{
+func DefaultAzureConfig(apiKey, baseURL string) *ClientConfig {
+	return &ClientConfig{
 		authToken:  apiKey,
 		BaseURL:    baseURL,
 		OrgID:      "",
@@ -67,11 +108,11 @@ func DefaultAzureConfig(apiKey, baseURL string) ClientConfig {
 	}
 }
 
-func (ClientConfig) String() string {
+func (*ClientConfig) String() string {
 	return "<OpenAI API ClientConfig>"
 }
 
-func (c ClientConfig) GetAzureDeploymentByModel(model string) string {
+func (c *ClientConfig) GetAzureDeploymentByModel(model string) string {
 	if c.AzureModelMapperFunc != nil {
 		return c.AzureModelMapperFunc(model)
 	}
